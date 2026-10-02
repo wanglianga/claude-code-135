@@ -1,0 +1,37 @@
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: farmcrowd-db
+    environment:
+      POSTGRES_USER: farm
+      POSTGRES_PASSWORD: farm123
+      POSTGRES_DB: farmcrowd
+    ports:
+      - "5432:5432"
+    volumes:
+      - farmcrowd_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U farm -d farmcrowd"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: farmcrowd-app
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgres://farm:farm123@db:5432/farmcrowd?sslmode=disable
+      STATIC_DIR: /app/web/dist
+      PORT: ":8080"
+      TZ: Asia/Shanghai
+    ports:
+      - "8080:8080"
+    restart: unless-stopped
+
+volumes:
+  farmcrowd_pgdata:

@@ -1,0 +1,7 @@
+**/node_modules
+frontend/dist
+backend/farm-server
+*.log
+.git
+.gitignore
+.DS_Store
